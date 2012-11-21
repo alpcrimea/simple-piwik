@@ -4,5 +4,6 @@ coverage
 rdoc
 pkg
 .rvmrc
+.project
 *~
 test/files/config/piwik.yml

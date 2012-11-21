@@ -43,6 +43,18 @@ module Piwik
       new(attributes, @config[:piwik_url], @config[:auth_token])
     end
     
+    def self.get_id_from_site_url(site_url,piwik_url=nil, auth_token=nil)
+      @config = if piwik_url.nil? || auth_token.nil?
+        load_config
+      else
+        {:piwik_url => piwik_url, :auth_token => auth_token}
+      end
+      begin
+        call('SitesManager.getSitesIdFromSiteUrl', {:url=>site_url}, @config[:piwik_url], @config[:auth_token])[0]['idsite']
+      rescue        
+      end
+    end
+          
     # Returns <tt>true</tt> if the current site does not exists in the Piwik yet.
     def new?
       id.nil? && created_at.nil?
@@ -212,7 +224,8 @@ module Piwik
       #puts "get_page_urls: #{result}"
       result
     end
-
+    
+   
     private
       # Loads the attributes in the instance variables.
       def load_attributes(attributes)
