@@ -25,6 +25,7 @@ module Piwik
       load_attributes(attributes)
     end
     
+    
     # Returns <tt>true</tt> if the current site does not exists in the Piwik yet.
     def new?
       created_at.nil? or created_at.blank?
@@ -126,6 +127,8 @@ module Piwik
         :password => result[0]['password'],
         :created_at => Time.parse(result[0]['date_registered'])
       }
+      result = call('UsersManager.getTokenAuth', {:userLogin => attributes[:login],:md5Password=>attributes[:password]}, piwik_url, auth_token)
+      attributes[:auth_token]=result[0]['result'],
       attributes
     end
   end
