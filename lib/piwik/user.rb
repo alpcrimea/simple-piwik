@@ -101,7 +101,17 @@ module Piwik
       attributes = get_user_attributes_by_login(user_login, @config[:piwik_url], @config[:auth_token])
       new(attributes, @config[:piwik_url], @config[:auth_token])
     end
-
+    
+    def self.load_by_email(user_email, piwik_url=nil, auth_token=nil)
+      raise ArgumentError, "expected a user email" if user_email.nil?
+      @config = if piwik_url.nil? || auth_token.nil?
+        load_config
+      else
+        {:piwik_url => piwik_url, :auth_token => auth_token}
+      end
+      attributes = get_user_attributes_by_email(user_email, @config[:piwik_url], @config[:auth_token])
+      new(attributes, @config[:piwik_url], @config[:auth_token])
+    end
     private
 
     # Loads the attributes in the instance variables.
@@ -137,5 +147,25 @@ module Piwik
       end
       attributes
     end
+    
+    def self.get_user_attributes_by_email(user_email, piwik_url, auth_token)
+      result = call('UsersManager.getUserByEmail', {:userEmail => user_email}, piwik_url, auth_token)
+      #puts "\n get_user_attributes_by_login #{result} \n"
+      attributes = {
+        :login => result[0]['login'],
+        :user_alias => result[0]['alias'],
+        :email => result[0]['email'],
+        :password => result[0]['password'],
+        :created_at => Time.parse(result[0]['date_registered'])
+      }
+
+      result = call('UsersManager.getTokenAuth', {:userLogin => attributes[:login],:md5Password=>attributes[:password]}, piwik_url, auth_token)
+      unless result['value'].nil?
+        attributes[:auth_token]=result['value']
+      else
+        attributes[:auth_token]=nil
+      end
+      attributes
+    end    
   end
 end
