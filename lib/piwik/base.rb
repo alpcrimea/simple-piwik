@@ -74,8 +74,15 @@ EOF
       verbose_obj_save = $VERBOSE
       $VERBOSE = nil # Suppress "warning: peer certificate won't be verified in this SSL session"
       json = nil
+      
+      begin
       resource=RestClient::Resource.new url,:timeout => 20, :open_timeout => 5
       json = resource.get
+      rescue
+       sleep 5
+       resource=RestClient::Resource.new url,:timeout => 20, :open_timeout => 5
+       json = resource.get             
+      end
       
       $VERBOSE = verbose_obj_save
       result = self.parse_json json
