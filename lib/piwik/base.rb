@@ -73,7 +73,15 @@ EOF
       params.each { |k, v| url << "&#{k}=#{CGI.escape(v.to_s)}" }
       verbose_obj_save = $VERBOSE
       $VERBOSE = nil # Suppress "warning: peer certificate won't be verified in this SSL session"
+      json = nil
+      
+      begin
       json = RestClient.get(url)
+      rescue
+        sleep 1
+        json = RestClient.get(url)
+      end
+      
       $VERBOSE = verbose_obj_save
       result = self.parse_json json
       if json =~ /error message=/
